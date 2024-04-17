@@ -1,0 +1,19 @@
+version: '3.3'
+
+services:
+  postgres:
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  service:
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  nginx:
+    ports:
+      - "127.0.0.1:8025:8025"
+
+  swagger:
+    ports:
+      - "127.0.0.1:8080:8080"
+

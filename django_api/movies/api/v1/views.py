@@ -3,7 +3,7 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models import Q
 from django.http import JsonResponse
 from django.views.generic.detail import BaseDetailView
-from movies.models import FilmWork
+from movies.models import FilmWork, PersonFilmWork
 
 
 class MoviesMixinApi:
@@ -23,15 +23,19 @@ class MoviesMixinApi:
     def filter_persons(self):
         genres = ArrayAgg("genres__name", distinct=True)
         actors = ArrayAgg(
-            "persons__full_name", distinct=True, filter=Q(personfilmwork__role="actor")
+            "persons__full_name",
+            distinct=True,
+            filter=Q(personfilmwork__role=PersonFilmWork.RoleChoices.ACTOR),
         )
         directors = ArrayAgg(
             "persons__full_name",
             distinct=True,
-            filter=Q(personfilmwork__role="director"),
+            filter=Q(personfilmwork__role=PersonFilmWork.RoleChoices.DIRECTOR),
         )
         writers = ArrayAgg(
-            "persons__full_name", distinct=True, filter=Q(personfilmwork__role="writer")
+            "persons__full_name",
+            distinct=True,
+            filter=Q(personfilmwork__role=PersonFilmWork.RoleChoices.WRITER),
         )
         return genres, actors, directors, writers
 

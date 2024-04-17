@@ -31,11 +31,7 @@ RUN poetry config virtualenvs.create false && \
 
 COPY . .
 
-COPY .env /app/.env
-
 RUN python manage.py collectstatic --noinput
-
-RUN python manage.py migrate
 
 USER web
 

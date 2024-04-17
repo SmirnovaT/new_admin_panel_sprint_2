@@ -5,14 +5,8 @@ services:
     image: postgres:14-alpine
     env_file:
       - .env
-    ports:
-      - "127.0.0.1:5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_DB=vacation
     networks:
       - backend.local
 
@@ -21,13 +15,28 @@ services:
     env_file:
       - .env
     build: .
-    ports:
-      - "127.0.0.1:8000:8000"
     volumes:
       - static_files_volume:/app/static
     networks:
       - my-network
 
+
+  # Добавила инит контейнер, который запускает миграции после страрта БД.
+  # Так как не удалось запустить файл run_uwsgi.sh, не хватает прав.
+  # ERROR: for service  Cannot start service service: OCI runtime create failed: runc create failed:
+  # unable to start container process: exec: "./run_uwsgi.sh": permission denied: unknown
+  # Пробовала в докерфайле создать группу, юзера, добавить юзера в эту группу и выдать права группе и юзеру на WORKDIR,
+  # но это тоже не помогло, снова была ошибка с правами.
+
+  init:
+    env_file:
+      - .env
+    build: .
+    entrypoint: sh -c "python manage.py migrate"
+    networks:
+      - my-network
+    depends_on:
+      - postgres
 
 
   nginx:
@@ -38,15 +47,12 @@ services:
       - ./src/site.conf:/etc/nginx/site.conf:ro
     depends_on:
       - service
-    ports:
-      - "127.0.0.1:8025:8025"
     networks:
       - my-network
 
+
   swagger:
     image: swaggerapi/swagger-ui:latest
-    ports:
-      - "127.0.0.1:8080:8080"
     volumes:
       - ./openapi.yaml:/usr/share/nginx/html/swagger/openapi.yaml:ro
     networks:
